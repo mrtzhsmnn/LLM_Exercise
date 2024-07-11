@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Einfache Wettervorhersage</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Einfache Wettervorhersage</h1>
+    <form method="GET" action="/get_forecast">
+        <label for="country">Country:</label>
+        <input type="text" id="country" name="country" required>
+        <label for="city">City:</label>
+        <input type="text" id="city" name="city" required>
+        <button type="submit">Get Weather</button>
+    </form>
+    <div id="results">
+        {% if weather_data %}
+            <h2>Vorhersage für: {{ weather_data.city }}, {{ weather_data.country }}</h2>
+            {% if weather_data.ai_text != ""%}
+                <div class="weather-section">
+                    <h3>AI Text</h3>
+                    <p>{{ weather_data.ai_text }}</p>
+                </div>
+            {% endif %}
+            <div class="weather-section">
+                <h3>Stündliche Vorhersage</h3>
+                {% for time, details in weather_data.hourly.items() %}
+                    <div>
+                        <strong>{{ time }}</strong>: Temp: {{ details.temp }}°C, Niederschlag: {{ details.niederschlag }}mm, Wetter: {{ details.wetter }}, Wind: {{ details.wind_geschwindigkeit }} km/h aus {{ details.wind_richtung }}°, Luftdruck: {{ details.luftdruck }} hPa, Luftfeuchte: {{ details.luftfeuchte }}%
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="weather-section">
+                <h3>Tägliche Vorhersage</h3>
+                {% for date, details in weather_data.daily.items() %}
+                    <div>
+                        <strong>{{ date }}</strong>: Max Temp: {{ details.max_temp }}°C, Min Temp: {{ details.min_temp }}°C, Regen: {{ details.niederschlag }}mm, Wetter: {{ details.wetter }}, Wind: {{ details.wind_geschwindigkeit }} km/h aus {{ details.wind_richtung }}°
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Geben Sie zur Suche Stadt und Land ein.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
