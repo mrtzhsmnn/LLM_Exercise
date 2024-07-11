@@ -1,0 +1,52 @@
+services:
+  weather:
+    container_name: weather
+    build: 
+      context: ./weather
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    networks:
+      - ai-net
+
+  ollama:
+    container_name: ollama
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    networks:
+      - ai-net
+  
+  ollama-setup:
+    container_name: ollama-setup
+    image: ubuntu:22.04
+    depends_on:
+      - ollama
+    entrypoint: ["bash", "-c", "apt-get update && apt-get install -y curl && curl http://ollama:11434/api/pull -d '{\"name\": \"llama3\"}' && curl http://ollama:11434/api/pull -d '{\"name\": \"moondream\"}' && curl http://ollama:11434/api/pull -d '{\"name\": \"qwen2:0.5b\"}'"]
+    restart: "no"
+    networks:
+      - ai-net
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    ports:
+      - "80:8080"
+    volumes:
+      - open-webui:/app/backend/data
+    restart: unless-stopped
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - WEBUI_AUTH=False
+    networks:
+      - ai-net
+
+networks:
+  ai-net:
+    name: ai-net
+    driver: bridge
+
+volumes:
+  open-webui:
